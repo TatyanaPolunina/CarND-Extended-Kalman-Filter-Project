@@ -8,16 +8,16 @@ using std::vector;
 VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
                               const vector<VectorXd> &ground_truth) 
 {
-
-  VectorXd rmse = VectorXd::Zero(estimations[0].size());  
+  std::cout << "rmse" << estimations.size();
   // check the validity of the following inputs:
   //  * the estimation vector size should not be zero
   //  * the estimation vector size should equal ground truth vector size
   if (estimations.size() != ground_truth.size()
       || estimations.size() == 0) {
     std::cout << "Invalid estimation or ground_truth data" << std::endl;
-    return rmse;
+    return VectorXd();
   }
+  VectorXd rmse = VectorXd::Zero(estimations[0].size());  
   
   for (unsigned int i=0; i < estimations.size(); ++i) {
     VectorXd diff = estimations[i] - ground_truth[i];
@@ -35,8 +35,9 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
 }
 
 MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
+  std::cout << "calculate Jacobian" << x_state;
   MatrixXd Hj(3,4);
-  if (x_state.size() != 4) {
+  if (x_state.size() < 4) {
     std::cout << "CalculateJacobian () - Error - Incorrect input" << std::endl;
     return Hj;
   }
@@ -60,10 +61,12 @@ MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
   Hj << (px/sqrt_sum), (py/sqrt_sum), 0, 0,
       -(py/sqr_sum), (px/sqr_sum), 0, 0,
       py*(vx*py - vy*px)/sum32, px*(px*vy - py*vx)/sum32, px/sqrt_sum, py/sqrt_sum;
+  std::cout << "Jacobian calculated" << Hj;
   return Hj;
 }
 
 VectorXd Tools::CalculateH(const VectorXd& x) {
+  std::cout << "CalculateH " << x << std::endl;
   VectorXd hx = VectorXd::Zero(3);
   
   if (x.size() != 4) {
@@ -82,10 +85,12 @@ VectorXd Tools::CalculateH(const VectorXd& x) {
     fi += 2 * M_PI; 
   float sqrt_sum = std::sqrt(px * px + py * py);
   hx << sqrt_sum, fi, (px*vx + py * vy) / sqrt_sum;
+  std::cout << "H Calculated " << hx << std::endl;
   return hx;
 }
 
 VectorXd Tools::PolarToCasterian(const VectorXd& polar) {
+  std::cout << "polarto " << polar;
   VectorXd res = VectorXd::Zero(4);
   if (polar.size() < 3) {
     std::cout << "incorrect polars";

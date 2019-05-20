@@ -1,5 +1,6 @@
 #include "kalman_filter.h"
 #include "tools.h"
+#include <iostream>
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -18,6 +19,7 @@ KalmanFilter::~KalmanFilter() {}
 
 void KalmanFilter::Init(VectorXd &x_in, MatrixXd &P_in, MatrixXd &F_in,
                         MatrixXd &H_in, MatrixXd &R_in, MatrixXd &Q_in) {
+  std::cout << "init KF ";
   x_ = x_in;
   P_ = P_in;
   F_ = F_in;
@@ -33,11 +35,11 @@ void KalmanFilter::Predict() {
 }
 
 
-void KalmanFilter::Update(const VectorXd &z) {
+void KalmanFilter::Update(const VectorXd &z, const MatrixXd& R) {
   VectorXd z_pred = H_ * x_;
   VectorXd y = z - z_pred;
   MatrixXd Ht = H_.transpose();
-  MatrixXd S = H_ * P_ * Ht + R_;
+  MatrixXd S = H_ * P_ * Ht + R;
   MatrixXd Si = S.inverse();
   MatrixXd PHt = P_ * Ht;
   MatrixXd K = PHt * Si;
@@ -48,24 +50,24 @@ void KalmanFilter::Update(const VectorXd &z) {
   P_ = (I - K * H_) * P_;
 }
 
-void KalmanFilter::UpdateEKF(const VectorXd &z) {
-  MatrixXd Hj = Tools::CalculateJacobian(z);
+void KalmanFilter::UpdateEKF(const VectorXd &z, const MatrixXd& R) {
+  MatrixXd Hj = Tools::CalculateJacobian(x_);
   VectorXd z_pred = Tools::CalculateH(x_);
   VectorXd y = z - z_pred;
   MatrixXd Ht = Hj.transpose();
-  MatrixXd S = Hj * P_ * Ht + R_;
+  MatrixXd S = Hj * P_ * Ht + R;
   MatrixXd Si = S.inverse();
   MatrixXd PHt = P_ * Ht;
   MatrixXd K = PHt * Si;
-
-  //new estimate
+   //new estimate
   x_ = x_ + (K * y);
   long x_size = x_.size();
   MatrixXd I = MatrixXd::Identity(x_size, x_size);
-  P_ = (I - K * H_) * P_;
+  P_ = (I - K * Hj) * P_;
 }
 
 void KalmanFilter::UpdateStateMatrices(const float dt, const float noise_ax, const float noise_ay) {
+  std::cout << " Update matrices ";
     // Modify the F matrix so that the time is integrated
   F_(0, 2) = dt;
   F_(1, 3) = dt;
