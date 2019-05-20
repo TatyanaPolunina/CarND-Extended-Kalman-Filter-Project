@@ -46,9 +46,14 @@ class KalmanFilter {
    */
   void UpdateEKF(const Eigen::VectorXd &z);
 
+  void UpdateStateMatrices(const float dt, const float noise_ax, const float noise_ay);
+  
+  const Eigen::VectorXd& GetEstimatedPos() const;
+  
+  const Eigen::MatrixXd& GetCovariance() const;
+private:
   // state vector
   Eigen::VectorXd x_;
-
   // state covariance matrix
   Eigen::MatrixXd P_;
 

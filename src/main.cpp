@@ -114,11 +114,11 @@ int main() {
           //   state vector
 
           VectorXd estimate(4);
-
-          double p_x = fusionEKF.ekf_.x_(0);
-          double p_y = fusionEKF.ekf_.x_(1);
-          double v1  = fusionEKF.ekf_.x_(2);
-          double v2 = fusionEKF.ekf_.x_(3);
+          const VectorXd& x_ = fusionEKF.ekf_.GetEstimatedPos();
+          double p_x = x_(0);
+          double p_y = x_(1);
+          double v1  = x_(2);
+          double v2 = x_(3);
 
           estimate(0) = p_x;
           estimate(1) = p_y;
