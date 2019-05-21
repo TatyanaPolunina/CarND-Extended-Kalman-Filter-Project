@@ -5,10 +5,6 @@
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-/* 
- * Please note that the Eigen library does not initialize 
- *   VectorXd or MatrixXd objects with zeros upon creation.
- */
 
 KalmanFilter::KalmanFilter() {
     x_ = VectorXd(4);
@@ -51,9 +47,10 @@ void KalmanFilter::Update(const VectorXd &z, const MatrixXd& R) {
 }
 
 void KalmanFilter::UpdateEKF(const VectorXd &z, const MatrixXd& R) {
-  MatrixXd Hj = Tools::CalculateJacobian(x_);
   VectorXd z_pred = Tools::CalculateH(x_);
   VectorXd y = z - z_pred;
+  Tools::NormalizePolarVector(y);
+  MatrixXd Hj = Tools::CalculateJacobian(x_);
   MatrixXd Ht = Hj.transpose();
   MatrixXd S = Hj * P_ * Ht + R;
   MatrixXd Si = S.inverse();
@@ -68,7 +65,7 @@ void KalmanFilter::UpdateEKF(const VectorXd &z, const MatrixXd& R) {
 
 void KalmanFilter::UpdateStateMatrices(const float dt, const float noise_ax, const float noise_ay) {
   std::cout << " Update matrices ";
-    // Modify the F matrix so that the time is integrated
+  // Modify the F matrix so that the time is integrated
   F_(0, 2) = dt;
   F_(1, 3) = dt;
   

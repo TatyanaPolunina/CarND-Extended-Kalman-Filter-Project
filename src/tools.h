@@ -24,6 +24,8 @@ class Tools {
   static Eigen::VectorXd CalculateH(const Eigen::VectorXd& x);
   
   static Eigen::VectorXd PolarToCasterian(const Eigen::VectorXd& polar);
+  
+  static void NormalizePolarVector(Eigen::VectorXd& polar);
 };
 
 #endif  // TOOLS_H_

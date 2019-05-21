@@ -8,7 +8,7 @@ using std::vector;
 VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
                               const vector<VectorXd> &ground_truth) 
 {
-  std::cout << "rmse" << estimations.size();
+  std::cout << "rmse " << estimations.size();
   // check the validity of the following inputs:
   //  * the estimation vector size should not be zero
   //  * the estimation vector size should equal ground truth vector size
@@ -31,12 +31,12 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
   // calculate the squared root
   rmse = rmse.array().sqrt();
   // return the result
+  std::cout << rmse << std::endl;
   return rmse; 
 }
 
 MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
-  std::cout << "calculate Jacobian" << x_state;
-  MatrixXd Hj(3,4);
+  MatrixXd Hj = MatrixXd::Zero(3,4);
   if (x_state.size() < 4) {
     std::cout << "CalculateJacobian () - Error - Incorrect input" << std::endl;
     return Hj;
@@ -61,12 +61,10 @@ MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
   Hj << (px/sqrt_sum), (py/sqrt_sum), 0, 0,
       -(py/sqr_sum), (px/sqr_sum), 0, 0,
       py*(vx*py - vy*px)/sum32, px*(px*vy - py*vx)/sum32, px/sqrt_sum, py/sqrt_sum;
-  std::cout << "Jacobian calculated" << Hj;
   return Hj;
 }
 
 VectorXd Tools::CalculateH(const VectorXd& x) {
-  std::cout << "CalculateH " << x << std::endl;
   VectorXd hx = VectorXd::Zero(3);
   
   if (x.size() != 4) {
@@ -78,19 +76,23 @@ VectorXd Tools::CalculateH(const VectorXd& x) {
   float py = x(1);
   float vx = x(2);
   float vy = x(3);
-  float fi = std::atan(py/px);
-  while (fi > M_PI)
-    fi -= 2 * M_PI;
-  while (fi < -M_PI)
-    fi += 2 * M_PI; 
+  
+  float fi = std::atan2(py, px);
+
   float sqrt_sum = std::sqrt(px * px + py * py);
-  hx << sqrt_sum, fi, (px*vx + py * vy) / sqrt_sum;
-  std::cout << "H Calculated " << hx << std::endl;
+  //function is linear
+  if (sqrt_sum < 0.00001)
+  {
+    hx << sqrt_sum, fi, 0;
+  }
+  else
+  {
+  	hx << sqrt_sum, fi, (px*vx + py * vy) / sqrt_sum;
+  }
   return hx;
 }
 
-VectorXd Tools::PolarToCasterian(const VectorXd& polar) {
-  std::cout << "polarto " << polar;
+VectorXd Tools::PolarToCasterian(const VectorXd& polar) {  
   VectorXd res = VectorXd::Zero(4);
   if (polar.size() < 3) {
     std::cout << "incorrect polars";
@@ -98,5 +100,15 @@ VectorXd Tools::PolarToCasterian(const VectorXd& polar) {
   }
   res(0) = polar(0) * cos (polar(1));
   res(1) = polar(0) * sin (polar(1));
+  res(2) = 1;
+  res(3) = 1; 
   return res;
+}
+
+void Tools::NormalizePolarVector(Eigen::VectorXd& polar) {
+  while (polar(1) > M_PI)
+    polar(1) -= 2 * M_PI;
+  
+  while (polar(1) < -M_PI)
+    polar(1) += 2 * M_PI;
 }
